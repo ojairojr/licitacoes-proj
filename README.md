@@ -1,50 +1,70 @@
 # Sistema Automatizado de Captura e Match de Licitações
 
-Este projeto captura editais diários de fontes do governo (como o PNCP) e cruza as informações com o perfil da empresa para sugerir licitações altamente compatíveis, operando através de containers Docker e em vias de implementar um WebApp com painel administrativo e disparos via n8n.
+Este projeto captura editais diários de fontes do governo (como o PNCP) e cruza as informações com o perfil da empresa para sugerir licitações altamente compatíveis. O sistema conta com uma infraestrutura de backend (Python/PostgreSQL) para as rotinas de extração, e uma interface web moderna (Next.js) para o gerenciamento de perfis e visualização de editais.
 
 ## 🚀 Como instalar e rodar em um novo computador
 
-Por utilizar **Docker**, o projeto garante que a configuração funcionará de forma idêntica em qualquer sistema operacional (Windows, Linux, macOS).
+O projeto é dividido em **Backend** (scripts de captura/banco de dados) e **Frontend** (painel web).
 
 ### Pré-requisitos
-1. Ter o [Git](https://git-scm.com/) instalado.
-2. Ter o [Docker Desktop](https://www.docker.com/products/docker-desktop) instalado e rodando.
+- Ter o [Git](https://git-scm.com/) instalado.
+- Ter o [Node.js](https://nodejs.org/) instalado.
+- (Recomendado) Ter o [Docker Desktop](https://www.docker.com/products/docker-desktop) instalado e rodando.
+- (Alternativa) [Python](https://www.python.org/) 3.10+ caso não utilize Docker para o backend.
 
-### Passo a Passo
+---
 
-**1. Clone o repositório**
-Abra o terminal/cmd e rode:
+### Passo 1: Clone o projeto e configure as variáveis
+Abra o terminal e clone o projeto:
 ```bash
 git clone https://github.com/ojairojr/licitacoes-proj.git
 cd licitacoes-proj
 ```
 
-**2. Configure o arquivo de variáveis de ambiente (.env)**
-O arquivo de senhas não vem no GitHub por segurança. Você precisa criar um arquivo chamado `.env` baseado no arquivo de exemplo.
-No Windows (PowerShell):
-```powershell
-cp .env.example .env
-```
-No Linux/Mac:
-```bash
-cp .env.example .env
-```
+Por motivos de segurança, o arquivo de senhas e acessos não vai para o GitHub. 
+1. Faça uma cópia do arquivo `.env.example` e renomeie-a para **`.env`** (na raiz do projeto).
+2. Opcional: Altere as credenciais (como senha do banco de dados) caso necessário.
 
-**3. Inicie os containers (Magia do Docker)**
-Esse comando vai baixar o Python, o Banco de Dados (PostgreSQL) e subir toda a estrutura magicamente em segundo plano:
-```bash
-docker compose up -d
-```
+---
 
-**4. Execute as inicializações do banco de dados (se for a primeira vez no PC)**
+### Passo 2: Inicialize a Interface Web (Frontend)
+As dependências do Next.js/React (`node_modules`) não são versionadas. Para instalar e rodar a interface:
+```bash
+cd web
+npm install
+npm run dev
+```
+O painel administrativo estará acessível em `http://localhost:3000`.
+
+---
+
+### Passo 3: Inicialize o Banco de Dados e Backend
+
+#### Opção A: Usando Docker (Muito mais fácil)
+Essa opção prepara o ambiente do banco de dados (PostgreSQL) e o Python automaticamente, garantindo que vai rodar sem erros na nova máquina. Volte para a pasta raiz do projeto (`cd ..`) e rode:
+```bash
+docker-compose up --build -d
+```
+Se for a primeira vez rodando, será preciso inicializar as tabelas do banco de dados:
 ```bash
 docker exec licitacoes_app python tools/init_db.py
 ```
 
-Pronto! Seu ambiente local está perfeitamente idêntico ao original e com o banco de dados inicializado.
+#### Opção B: Sem Docker (Localmente)
+Caso prefira não usar Docker, você deverá ter um banco PostgreSQL local, editar o `.env` com os dados dele e configurar o ambiente Python:
+```bash
+# Criar e ativar um ambiente virtual
+python -m venv venv
+venv\Scripts\activate      # no Windows
+# source venv/bin/activate # no Linux/Mac
 
-## 🛠️ Comandos Úteis do Projeto
+# Instalar as bibliotecas Python
+pip install -r requirements.txt
+```
 
-Para acionar os workers de extração no ambiente local (sandbox):
-- **Capturar do PNCP:** `docker exec licitacoes_app python tools/fetch_pncp.py`
-- **Rodar algoritmo de Match:** `docker exec licitacoes_app python tools/calculate_score.py`
+---
+
+## 🛠️ Comandos Úteis do Backend
+Com o ambiente (Docker) rodando, você pode rodar as captações e cálculos de nota:
+- **Capturar Editais do PNCP:** `docker exec licitacoes_app python tools/fetch_pncp.py`
+- **Rodar Algoritmo de Match (Notas):** `docker exec licitacoes_app python tools/calculate_score.py`
