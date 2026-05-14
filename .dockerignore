@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+.git/
+.dockerignore
+Dockerfile
+docker-compose.yml
+.tmp/
+
+web/node_modules
+web/.next
